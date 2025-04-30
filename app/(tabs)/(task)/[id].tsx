@@ -52,7 +52,7 @@ export default function TaskDetailScreen() {
       prev.map((s) => (s.id === stepId ? { ...s, done: !s.done } : s))
     );
   }
-
+  //
   return (
     <View
       style={{
