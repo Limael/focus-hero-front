@@ -1,4 +1,3 @@
-// app/(tabs)/rewards.tsx
 import React, { useState } from "react";
 import {
   SafeAreaView,
@@ -11,10 +10,15 @@ import {
   Modal,
   Pressable,
 } from "react-native";
+import { CentralizedShield } from "@/components/ui/CentralizedShield";
+import GiftSVG from "@/components/ui/GiftSVG";
+import { RewardTaskCard } from "@/components/ui/RewardTaskCard";
+import { RewardModal } from "@/components/ui/RewardModal";
 
 type Reward = {
   id: string;
   title: string;
+  subTitle?: string;
   description: string;
   image?: any;
   claimed: boolean;
@@ -24,14 +28,16 @@ const mockRewards: Reward[] = [
   {
     id: "r1",
     title: "Uma ida no Mc Donald’s",
+    subTitle: "Combo médio liberado!",
     description:
-      "Valido para um lanche médio à sua escolha no McDonald’s mais próximo.",
+      "Válido para um lanche médio à sua escolha no McDonald’s mais próximo.",
     image: require("@/assets/images/dish.png"),
     claimed: false,
   },
   {
     id: "r2",
     title: "Um brinquedo novo",
+    subTitle: "Presente garantido!",
     description: "Escolha um brinquedo de até R$50 em nossa loja parceira.",
     image: require("@/assets/images/dish.png"),
     claimed: false,
@@ -39,6 +45,7 @@ const mockRewards: Reward[] = [
   {
     id: "r3",
     title: "Sessão de cinema",
+    subTitle: "Filme e pipoca liberados!",
     description:
       "Ingresso de cinema para você e um amigo (válido até o fim do mês).",
     image: require("@/assets/images/dish.png"),
@@ -47,14 +54,16 @@ const mockRewards: Reward[] = [
   {
     id: "r4",
     title: "Sorvete grátis",
+    subTitle: "Doce recompensa!",
     description:
-      "Vale um sorvete médio em qualquer sorveteria artesã gratúita.",
+      "Vale um sorvete médio em qualquer sorveteria artesanal gratuita.",
     image: require("@/assets/images/dish.png"),
     claimed: false,
   },
   {
     id: "r5",
     title: "Dia sem tarefas",
+    subTitle: "Descanso merecido!",
     description:
       "Escolha um dia da semana para descansar e pular todas as tarefas.",
     image: require("@/assets/images/dish.png"),
@@ -75,113 +84,42 @@ export default function RewardsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Text style={styles.title}>Lista de tarefas</Text>
-
+    <View
+      style={{
+        paddingHorizontal: 16,
+        flex: 1,
+      }}
+    >
       <ScrollView contentContainerStyle={styles.list}>
-        {rewards.map((r) => (
-          <TouchableOpacity
+        {rewards.map((r, index) => (
+          <RewardTaskCard
             key={r.id}
-            style={[styles.card, r.claimed && styles.cardClaimed]}
+            title={r.title}
+            showReward={false}
             onPress={() => setSelected(r)}
-            activeOpacity={0.8}
-          >
-            {r.image && <Image source={r.image} style={styles.thumb} />}
-            <View style={styles.cardText}>
-              <Text style={styles.cardTitle}>{r.title}</Text>
-              <Text style={styles.cardDesc} numberOfLines={2}>
-                {r.description}
-              </Text>
-            </View>
-            {r.claimed && <Text style={styles.badge}>✓</Text>}
-          </TouchableOpacity>
+            rewardIcon={<GiftSVG width={80} height={86} />}
+          />
         ))}
       </ScrollView>
 
-      <Modal
+      <RewardModal
         visible={!!selected}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSelected(null)}
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setSelected(null)}
-        >
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>{selected?.title}</Text>
-            {selected?.image && (
-              <Image source={selected.image} style={styles.modalImage} />
-            )}
-            <Text style={styles.modalDesc}>{selected?.description}</Text>
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.closeBtn]}
-                onPress={() => setSelected(null)}
-              >
-                <Text style={(styles.modalBtnText, styles.modalCloseBtnText)}>
-                  Fechar
-                </Text>
-              </TouchableOpacity>
-              {!selected?.claimed && (
-                <TouchableOpacity
-                  style={[styles.modalBtn, styles.claimBtn]}
-                  onPress={() => handleClaim(selected!.id)}
-                >
-                  <Text style={[styles.modalBtnText, styles.claimText]}>
-                    Resgatar
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
-    </SafeAreaView>
+        reward={selected}
+        onClose={() => setSelected(null)}
+        onClaim={handleClaim}
+        claimText="Resgatar"
+        secondaryText="Fechar"
+      />
+    </View>
   );
 }
-//asda
+
 const PRIMARY = "#1D3D47";
 const LIGHT = "#fff";
 const GREY = "#ECECEC";
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, paddingHorizontal: 16 },
-  list: { padding: 16, paddingBottom: 32 },
-
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: LIGHT,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: GREY,
-  },
-  cardClaimed: {
-    opacity: 0.6,
-  },
-  thumb: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: PRIMARY,
-    marginBottom: 12,
-  },
-  cardText: { flex: 1 },
-  cardTitle: { fontSize: 16, fontWeight: "600", marginBottom: 4 },
-  cardDesc: { fontSize: 13, color: "#555" },
-  badge: {
-    fontSize: 18,
-    color: PRIMARY,
-    fontWeight: "700",
-  },
+  list: { paddingBottom: 32, paddingTop: 16, gap: 32, marginTop: 12 },
 
   modalOverlay: {
     flex: 1,
@@ -229,15 +167,14 @@ const styles = StyleSheet.create({
   claimBtn: {
     backgroundColor: PRIMARY,
   },
-  modalBtnText: {
+  claimText: {
     fontSize: 14,
     fontWeight: "600",
     color: LIGHT,
   },
-  claimText: {
-    color: LIGHT,
-  },
   modalCloseBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
     color: "#000",
   },
 });

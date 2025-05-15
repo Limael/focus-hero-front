@@ -1,5 +1,4 @@
-// app/(auth)/login.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -9,26 +8,35 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/context/AuthContext"; // 👈 importa aqui
+import { api } from "@/services/api";
+import axios from "axios";
 
 type FormData = { email: string; password: string };
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { loginAsParent } = useAuth(); // 👈 usa o AuthContext
+
+
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
-    // Simula uma chamada à API
-    setTimeout(() => {
-      // Ao “sucesso”, navega para a root das tabs (sua home)
+  const onSubmit = async (data: FormData) => {
+    try {
+      await loginAsParent(data.email, data.password);
       router.replace("/");
-    }, 800);
+    } catch (err: any) {
+      console.error("Erro ao logar:", err);
+      Alert.alert("Erro ao entrar", "E-mail ou senha inválidos");
+    }
   };
 
   return (
@@ -100,7 +108,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#f5f5f5", // leve fundo cinza
+    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 26,

@@ -1,15 +1,17 @@
-// app/(tabs)/task/[id].tsx
-import React, { useState } from "react";
+import React from "react";
 import {
-  SafeAreaView,
   ScrollView,
   View,
   Text,
-  Image,
   StyleSheet,
-  TouchableOpacity,
+  Image,
+  SafeAreaView,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { RewardShield } from "@/components/ui/RewardShield";
+import GemSVG from "@/components/ui/GemSVG";
+import { GreenButton } from "@/components/ui/GreenButton";
+import { TransparentButton } from "@/components/ui/TransparentButton";
 
 type Step = { id: string; text: string; done: boolean };
 type Task = {
@@ -18,183 +20,126 @@ type Task = {
   description: string;
   image?: any;
   steps: Step[];
+  dueDate: string;
+  expectedTime: string;
+  reward: number;
 };
 
 const mockTasks: Task[] = [
   {
     id: "1",
     title: "Lavar a louça",
+    expectedTime: "30 min",
+    reward: 150,
     description:
       "Lavar a louça do café da manhã, até às 14:00, não precisa lavar os talheres.",
     image: require("@/assets/images/dish.png"),
+    dueDate: "2023-10-01T14:00:00Z",
     steps: [
       { id: "a", text: "Colocar 5 gotas de detergente na esponja", done: true },
       { id: "b", text: "Esfregar a esponja em todos os pratos", done: false },
     ],
   },
-  // … outros mocks
 ];
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const task = mockTasks.find((t) => t.id === id);
-
-  // mantém os passos no estado
-  const [steps, setSteps] = useState<Step[]>(task?.steps ?? []);
 
   if (!task) {
     return <Text style={styles.errorText}>Tarefa não encontrada.</Text>;
   }
 
-  function toggleStep(stepId: string) {
-    setSteps((prev) =>
-      prev.map((s) => (s.id === stepId ? { ...s, done: !s.done } : s))
-    );
-  }
-  //
   return (
-    <View
-      style={{
-        paddingHorizontal: 16,
-        minHeight: "100%",
-        backgroundColor: "#fff",
-      }}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        {task.image && <Image source={task.image} style={styles.image} />}
-
-        <Text style={styles.sectionTitle}>Descrição</Text>
-        <Text style={styles.description}>{task.description}</Text>
-
-        <Text style={styles.sectionTitle}>Passo a passo</Text>
-        {steps.map((step) => (
-          <TouchableOpacity
-            key={step.id}
-            style={[styles.stepRow, step.done && styles.stepRowDone]}
-            activeOpacity={0.7}
-            onPress={() => toggleStep(step.id)}
-          >
-            <View
-              style={[styles.stepCircle, step.done && styles.stepCircleDone]}
-            >
-              {step.done && <Text style={styles.checkMark}>✓</Text>}
-            </View>
-            <Text style={[styles.stepText, step.done && styles.stepTextDone]}>
-              {step.text}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.wrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.contentHeader}>
+            <Text style={styles.title}>{task.title}</Text>
+            <Text style={styles.dueDate}>
+              Prazo: {formatDate(task.dueDate)}
             </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity style={styles.ctaButton}>
-          <Text style={styles.ctaText}>Completar Missão</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.ctaButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.ctaText}>Voltar</Text>
-        </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Image
+              source={task.image}
+              style={styles.image}
+              resizeMode="cover"
+            />
+
+            <View style={styles.taskHeader}>
+              <Text style={styles.subTitle}>Como fazer...</Text>
+              <View style={styles.rewardWrapper}>
+                <RewardShield
+                  text={`+${task.reward}`}
+                  Icon={<GemSVG width={70} height={86} />}
+                  gradientStart="#F8C98E"
+                  gradientEnd="#C98B44"
+                />
+              </View>
+            </View>
+
+            <Text style={styles.steps}>
+              {task.steps.map((step) => `\u2022 ${step.text}\n`)}
+            </Text>
+
+            <Text style={styles.subTitle}>Tempo esperado</Text>
+            <Text
+              style={styles.expectedTime}
+            >{`\u2022 ${task.expectedTime}`}</Text>
+          </View>
+        </ScrollView>
+        <View style={styles.footer}>
+          <GreenButton onPress={() => console.log("Começou!")}>
+            COMEÇAR TAREFA!
+          </GreenButton>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
-const PRIMARY = "#1D3D47";
-const GREY_LIGHT = "#ECECEC";
-
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff", marginTop: 36 },
-  content: { padding: 16, paddingBottom: 32 },
-
-  image: {
-    width: "100%",
-    height: 180,
-    borderRadius: 12,
+  safeArea: {
+    flex: 1,
+  },
+  wrapper: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+    flex: 1,
+  },
+  contentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: PRIMARY,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 14,
-    color: "#333",
-    lineHeight: 20,
-  },
-
-  stepRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: GREY_LIGHT,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  stepRowDone: {
-    backgroundColor: "#F0FFF4", // leve destaque verde
-  },
-
-  stepCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: GREY_LIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  stepCircleDone: {
-    backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
-  },
-  checkMark: {
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    fontFamily: "Supersonic Rocketship",
     color: "#fff",
-    fontWeight: "700",
   },
-
-  stepText: {
-    flex: 1,
-    fontSize: 14,
-    color: "#333",
-  },
-  stepTextDone: {
-    textDecorationLine: "line-through",
-    color: "#888",
-  },
-
-  ctaButton: {
-    marginTop: 24,
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 8,
-    height: 48,
-    justifyContent: "center",
-    alignItems: "flex-end",
-    paddingHorizontal: 16,
-  },
-  ctaText: {
+  dueDate: {
     fontSize: 16,
-    fontWeight: "600",
-    color: PRIMARY,
+    color: "#fff",
   },
-
-  backButton: {
-    marginTop: 12,
-    alignItems: "center",
-  },
-  backText: {
-    fontSize: 14,
-    color: PRIMARY,
-  },
-
   errorText: {
     flex: 1,
     textAlign: "center",
@@ -202,12 +147,54 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 16,
   },
-  buttonsContainer: {
-    display: "flex",
-    gap: 8,
-    flexDirection: "row",
-    justifyContent: "flex-end",
+  card: {
     padding: 16,
+    backgroundColor: "#0A3B46",
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#518692",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#A6F3FF",
+  },
+  taskHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 8,
+  },
+  rewardWrapper: {
+    marginTop: -16,
+  },
+  subTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  steps: {
+    width: "100%",
+    color: "#fff",
+    marginTop: -8,
+    lineHeight: 22,
+  },
+  expectedTime: {
+    color: "#fff",
+    marginTop: 8,
+    fontSize: 16,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    position: "relative",
+    bottom: 0,
   },
 });
