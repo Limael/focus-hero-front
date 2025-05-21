@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -9,97 +9,359 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
+  ImageBackground,
 } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
-import { useAuth } from "@/context/AuthContext"; // 👈 importa aqui
-import { api } from "@/services/api";
-import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import { GreenButton } from "@/components/ui/GreenButton";
 
-type FormData = { email: string; password: string };
+type ParentFormData = { email: string; password: string };
+type HeroFormData = { parentEmail: string; name: string; password: string };
+type PsychologistFormData = { email: string; password: string };
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { loginAsParent } = useAuth(); // 👈 usa o AuthContext
+  const { loginAsParent, loginAsChild } = useAuth(); // <-- Implemente loginAsParent no contexto!
+  const [loginType, setLoginType] = useState<
+    "parent" | "child" | "psychologist"
+  >("parent");
 
+  // Formulários
+  const {
+    control: parentControl,
+    handleSubmit: handleSubmitParent,
+    formState: { errors: parentErrors, isSubmitting: isSubmittingParent },
+  } = useForm<ParentFormData>();
 
   const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>();
+    control: heroControl,
+    handleSubmit: handleSubmitHero,
+    formState: { errors: heroErrors, isSubmitting: isSubmittingHero },
+  } = useForm<HeroFormData>();
 
-  const onSubmit = async (data: FormData) => {
+  const {
+    control: psychologistControl,
+    handleSubmit: handleSubmitPsychologist,
+    formState: {
+      errors: psychologistErrors,
+      isSubmitting: isSubmittingPsychologist,
+    },
+  } = useForm<PsychologistFormData>();
+
+  // Handlers
+  const onSubmitParent = async (data: ParentFormData) => {
     try {
       await loginAsParent(data.email, data.password);
       router.replace("/");
-    } catch (err: any) {
-      console.error("Erro ao logar:", err);
+    } catch {
       Alert.alert("Erro ao entrar", "E-mail ou senha inválidos");
     }
   };
 
+  const onSubmitHero = async (data: HeroFormData) => {
+    try {
+      await loginAsChild(data.parentEmail, data.name, data.password);
+      router.replace("/");
+    } catch {
+      Alert.alert("Erro ao entrar", "Dados inválidos para login do herói");
+    }
+  };
+
+  const onSubmitPsychologist = async (data: PsychologistFormData) => {
+    try {
+      await loginAsParent(data.email, data.password);
+      router.replace("/");
+    } catch {
+      Alert.alert("Erro ao entrar", "E-mail ou senha inválidos para psicólogo");
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.select({ ios: "padding", android: undefined })}
+    <ImageBackground
+      source={require("@/assets/images/bg-pattern.png")}
+      style={StyleSheet.absoluteFillObject}
     >
-      <Text style={styles.title}>Bem-vindo de volta!</Text>
-
-      <Controller
-        name="email"
-        control={control}
-        rules={{ required: "E-mail é obrigatório" }}
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            placeholder="E-mail"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-      />
-      {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
-
-      <Controller
-        name="password"
-        control={control}
-        rules={{ required: "Senha é obrigatória" }}
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            placeholder="Senha"
-            secureTextEntry
-            style={styles.input}
-            onChangeText={onChange}
-            value={value}
-          />
-        )}
-      />
-      {errors.password && (
-        <Text style={styles.error}>{errors.password.message}</Text>
-      )}
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSubmit(onSubmit)}
-        disabled={isSubmitting}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.select({ ios: "padding", android: undefined })}
       >
-        {isSubmitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Entrar</Text>
-        )}
-      </TouchableOpacity>
+        <Image
+          source={require("@/assets/images/logo.png")}
+          style={{
+            alignSelf: "center",
+            marginBottom: 24,
+          }}
+        />
 
-      <TouchableOpacity
-        style={styles.linkContainer}
-        onPress={() => router.push("/register")}
-      >
-        <Text style={styles.linkText}>Não tem conta? Cadastre-se</Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
+        {/* Switch de login */}
+        <View style={styles.switchWrapper}>
+          <TouchableOpacity
+            style={[
+              styles.switchButton,
+              loginType === "parent" && styles.switchButtonActive,
+            ]}
+            onPress={() => setLoginType("parent")}
+          >
+            <Text
+              style={[
+                styles.switchButtonText,
+                loginType === "parent" && styles.switchButtonTextActive,
+              ]}
+            >
+              Responsável
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.switchButton,
+              loginType === "child" && styles.switchButtonActive,
+            ]}
+            onPress={() => setLoginType("child")}
+          >
+            <Text
+              style={[
+                styles.switchButtonText,
+                loginType === "child" && styles.switchButtonTextActive,
+              ]}
+            >
+              Herói
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.switchButton,
+              loginType === "psychologist" && styles.switchButtonActive,
+            ]}
+            onPress={() => setLoginType("psychologist")}
+          >
+            <Text
+              style={[
+                styles.switchButtonText,
+                loginType === "psychologist" && styles.switchButtonTextActive,
+              ]}
+            >
+              Psicólogo
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Formulário do Responsável */}
+        {loginType === "parent" && (
+          <>
+            <Controller
+              name="email"
+              control={parentControl}
+              rules={{ required: "E-mail é obrigatório" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="E-mail"
+                  placeholderTextColor={"#fff"}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {parentErrors.email && (
+              <Text style={styles.error}>{parentErrors.email.message}</Text>
+            )}
+
+            <Controller
+              name="password"
+              control={parentControl}
+              rules={{ required: "Senha é obrigatória" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="Senha"
+                  placeholderTextColor={"#fff"}
+                  secureTextEntry
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {parentErrors.password && (
+              <Text style={styles.error}>{parentErrors.password.message}</Text>
+            )}
+
+            <View
+              style={{
+                marginTop: 24,
+              }}
+            >
+              <GreenButton
+                disabled={isSubmittingParent}
+                onPress={handleSubmitParent(onSubmitParent)}
+              >
+                {isSubmittingParent ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Entrar</Text>
+                )}
+              </GreenButton>
+            </View>
+          </>
+        )}
+
+        {/* Formulário do Herói */}
+        {loginType === "child" && (
+          <>
+            <Controller
+              name="parentEmail"
+              control={heroControl}
+              rules={{ required: "E-mail do responsável é obrigatório" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="E-mail do responsável"
+                  placeholderTextColor={"#fff"}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {heroErrors.parentEmail && (
+              <Text style={styles.error}>{heroErrors.parentEmail.message}</Text>
+            )}
+
+            <Controller
+              name="name"
+              control={heroControl}
+              rules={{ required: "Nome do herói é obrigatório" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="Nome do herói"
+                  placeholderTextColor={"#fff"}
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {heroErrors.name && (
+              <Text style={styles.error}>{heroErrors.name.message}</Text>
+            )}
+
+            <Controller
+              name="password"
+              control={heroControl}
+              rules={{ required: "Senha é obrigatória" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="Senha"
+                  placeholderTextColor={"#fff"}
+                  secureTextEntry
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {heroErrors.password && (
+              <Text style={styles.error}>{heroErrors.password.message}</Text>
+            )}
+
+            <View
+              style={{
+                marginTop: 24,
+              }}
+            >
+              <GreenButton
+                disabled={isSubmittingHero}
+                onPress={handleSubmitHero(onSubmitHero)}
+              >
+                {isSubmittingHero ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Entrar</Text>
+                )}
+              </GreenButton>
+            </View>
+          </>
+        )}
+
+        {/* Formulário do Psicólogo */}
+        {loginType === "psychologist" && (
+          <>
+            <Controller
+              name="email"
+              control={psychologistControl}
+              rules={{ required: "E-mail é obrigatório" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="E-mail"
+                  placeholderTextColor={"#fff"}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {psychologistErrors.email && (
+              <Text style={styles.error}>
+                {psychologistErrors.email.message}
+              </Text>
+            )}
+
+            <Controller
+              name="password"
+              control={psychologistControl}
+              rules={{ required: "Senha é obrigatória" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="Senha"
+                  placeholderTextColor={"#fff"}
+                  secureTextEntry
+                  style={styles.input}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {psychologistErrors.password && (
+              <Text style={styles.error}>
+                {psychologistErrors.password.message}
+              </Text>
+            )}
+
+            <View
+              style={{
+                marginTop: 24,
+              }}
+            >
+              <GreenButton
+                disabled={isSubmittingPsychologist}
+                onPress={handleSubmitPsychologist(onSubmitPsychologist)}
+              >
+                {isSubmittingPsychologist ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Entrar</Text>
+                )}
+              </GreenButton>
+            </View>
+          </>
+        )}
+
+        {(loginType === "parent" || loginType === "psychologist") && (
+          <TouchableOpacity
+            style={styles.linkContainer}
+            onPress={() => router.push("/register")}
+          >
+            <Text style={styles.linkText}>Não tem conta? Cadastre-se</Text>
+          </TouchableOpacity>
+        )}
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
@@ -108,7 +370,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 26,
@@ -120,8 +381,10 @@ const styles = StyleSheet.create({
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#fff",
+    borderColor: "#A6F3FF",
+    backgroundColor: "#298B96",
+    color: "#fff",
+
     paddingHorizontal: 16,
     borderRadius: 8,
     marginTop: 12,
@@ -142,19 +405,47 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "800",
   },
   linkContainer: {
     marginTop: 16,
     alignItems: "center",
   },
   linkText: {
-    color: "#1A1CED",
+    color: "#fff",
     fontSize: 14,
   },
   error: {
     color: "#D32F2F",
     marginTop: 4,
     marginLeft: 4,
+  },
+  switchWrapper: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 24,
+    gap: 8,
+  },
+  switchButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    backgroundColor: "#298B96",
+    borderWidth: 1,
+    borderColor: "#A6F3FF",
+    borderRadius: 8,
+  },
+  switchButtonActive: {
+    borderColor: "#1D3D47",
+    backgroundColor: "#fff",
+  },
+  switchButtonText: {
+    textAlign: "center",
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  switchButtonTextActive: {
+    color: "#1D3D47",
   },
 });

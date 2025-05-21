@@ -13,21 +13,26 @@ import { TransparentButton } from "./TransparentButton";
 import GiftSVG from "./GiftSVG";
 
 type Reward = {
-  id: string;
-  title: string;
-  subTitle?: string;
+  id: number;
   description: string;
-  image?: any;
-  claimed: boolean;
+  requiredPoints: number;
+  status: "available" | "redeemed" | "pending";
+  childId: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type RewardModalProps = {
   visible: boolean;
   reward: Reward | null;
   onClose: () => void;
-  onClaim: (id: string) => void;
+  onClaim: (id: number) => void;
   claimText?: string;
   secondaryText?: string;
+  title?: string;
+  subTitle?: string;
+  onPressCard?: () => void;
+  claimable?: boolean;
 };
 
 export function RewardModal({
@@ -37,6 +42,10 @@ export function RewardModal({
   onClaim,
   claimText = "Resgatar",
   secondaryText = "Fechar",
+  title,
+  subTitle,
+  claimable = true,
+  onPressCard,
 }: RewardModalProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -63,6 +72,15 @@ export function RewardModal({
 
   if (!reward) return null;
 
+  const displayTitle = title || "Recompensa";
+  const displaySubTitle =
+    subTitle ||
+    (reward.status === "redeemed"
+      ? "Recompensa já resgatada"
+      : reward.status === "pending"
+      ? "Recompensa pendente"
+      : undefined);
+
   return (
     <Modal
       visible={visible}
@@ -80,22 +98,30 @@ export function RewardModal({
             },
           ]}
         >
-          <Text style={styles.title}>{reward.title}</Text>
-          {!!reward.subTitle && (
-            <Text style={styles.subTitle}>{reward.subTitle}</Text>
+          <Text style={styles.title}>{displayTitle}</Text>
+          {!!displaySubTitle && (
+            <Text style={styles.subTitle}>{displaySubTitle}</Text>
           )}
 
           <RewardTaskCard
-            title={reward.title}
-            reward={110}
+            title={reward.description}
+            reward={reward.requiredPoints}
             showReward={false}
-            onPress={() => {}}
             rewardIcon={<GiftSVG width={70} height={86} />}
             rewardGradient={["#78E3A6", "#28914F"]}
             cardBackground="#28914F"
             cardFontColor="#fff"
             isTask={false}
+            onPress={onPressCard}
           />
+
+          <View style={styles.statusChipWrapper}>
+            <Text style={[styles.statusChip, getStatusStyle(reward.status)]}>
+              {reward.status === "available" && "Disponível"}
+              {reward.status === "redeemed" && "Resgatada"}
+              {reward.status === "pending" && "Pendente"}
+            </Text>
+          </View>
 
           <View style={styles.buttons}>
             <View style={styles.button}>
@@ -103,7 +129,7 @@ export function RewardModal({
                 {secondaryText}
               </TransparentButton>
             </View>
-            {!reward.claimed && (
+            {reward.status === "available" && claimable && (
               <View style={styles.button}>
                 <GreenButton onPress={() => onClaim(reward.id)}>
                   {claimText}
@@ -115,6 +141,13 @@ export function RewardModal({
       </Pressable>
     </Modal>
   );
+}
+
+function getStatusStyle(status: Reward["status"]) {
+  if (status === "redeemed") return { backgroundColor: "#aaa", color: "#222" };
+  if (status === "pending")
+    return { backgroundColor: "#E2B52B", color: "#222" };
+  return { backgroundColor: "#28914F", color: "#fff" };
 }
 
 const styles = StyleSheet.create({
@@ -136,8 +169,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: 4,
+    marginBottom: 18,
     color: "#fff",
+    width: "80%",
   },
   subTitle: {
     fontSize: 14,
@@ -145,24 +179,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: "#fff",
   },
+  statusChipWrapper: {
+    marginVertical: 12,
+  },
+  statusChip: {
+    fontWeight: "bold",
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+    overflow: "hidden",
+    textAlign: "center",
+    fontSize: 14,
+    alignSelf: "center",
+  },
   buttons: {
-    marginTop: 20,
+    marginTop: 12,
     width: "100%",
     gap: 12,
   },
   button: {
     width: "100%",
-  },
-  claimText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    textAlign: "center",
-  },
-  closeText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#fff",
-    textAlign: "center",
   },
 });

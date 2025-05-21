@@ -10,6 +10,18 @@ export async function loginParent(email: string, password: string) {
   return token;
 }
 
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  role: "parent" | "psychologist";
+};
+
+export async function registerUser(payload: RegisterPayload) {
+  const response = await api.post("/auth/register", payload);
+  return response.data;
+}
+
 export async function loginChild(
   parentEmail: string,
   name: string,

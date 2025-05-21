@@ -4,10 +4,15 @@ import { LinearGradient } from "expo-linear-gradient";
 
 type GradientButtonProps = {
   onPress?: () => void;
+  disabled?: boolean;
   children: React.ReactNode;
 };
 
-export function GreenButton({ onPress, children }: GradientButtonProps) {
+export function GreenButton({
+  onPress,
+  children,
+  disabled,
+}: GradientButtonProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -31,6 +36,7 @@ export function GreenButton({ onPress, children }: GradientButtonProps) {
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      disabled={disabled}
     >
       <Animated.View
         style={[styles.animated, { transform: [{ scale: scaleAnim }] }]}

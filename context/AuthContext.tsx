@@ -1,13 +1,28 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+// context/AuthContext.tsx
+import React, { createContext, useContext } from "react";
+import { useProfile } from "@/hooks/useProfile"; // novo hook com React Query!
 import { getToken, logout as logoutService } from "@/services/authService";
 import { api } from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-type User = {
+// Tipagens de sempre
+export type Psychologist = { id: number; name: string; email: string };
+export type Parent = {
+  id: number;
+  name: string;
+  email: string;
+  psychologist?: Psychologist | null;
+};
+export type User = {
   id: number;
   email: string;
-  name?: string;
-  role: "parent" | "child";
+  name: string;
+  role: "parent" | "child" | "psychologist";
+  gender?: "male" | "female" | "other";
+  parent?: Parent | null;
+  psychologist?: Psychologist | null;
+  associationKey?: string;
+  points?: number;
 };
 
 type AuthContextData = {
@@ -26,34 +41,35 @@ type AuthContextData = {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Aqui usamos o hook do React Query:
+  const {
+    data: user,
+    isLoading: loadingUser,
+    refetch: refetchUser,
+  } = useProfile();
+  // Você pode querer controlar o token separado se precisar
+  const [token, setToken] = React.useState<string | null>(null);
+  const [loadingToken, setLoadingToken] = React.useState(true);
 
-  const loadUser = async () => {
-    const storedToken = await getToken();
-    if (!storedToken) return setLoading(false);
-
-    try {
-      api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
-      const res = await api.get("/users/me");
-      setUser(res.data);
-      setToken(storedToken);
-    } catch (err) {
-      await logout();
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Carregar token no mount (opcional, se não fizer pelo TanStack Query)
+  React.useEffect(() => {
+    (async () => {
+      const storedToken = await getToken();
+      if (storedToken) {
+        api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        setToken(storedToken);
+      }
+      setLoadingToken(false);
+    })();
+  }, []);
 
   const loginAsParent = async (email: string, password: string) => {
     const res = await api.post("auth/login", { email, password });
     const newToken = res.data.access_token;
     await AsyncStorage.setItem("@focusHero:token", newToken);
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-    const profile = await api.get("users/me");
-    setUser(profile.data);
     setToken(newToken);
+    await refetchUser(); // força atualização do user depois do login
   };
 
   const loginAsChild = async (
@@ -61,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     name: string,
     password: string
   ) => {
-    const res = await api.post("/auth/child/login", {
+    const res = await api.post("/auth/child-login", {
       parentEmail: email,
       name,
       password,
@@ -69,25 +85,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const newToken = res.data.access_token;
     await AsyncStorage.setItem("@focusHero:token", newToken);
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
-    const profile = await api.get("/users/me");
-    setUser(profile.data);
     setToken(newToken);
+    await refetchUser();
   };
 
   const logout = async () => {
     await logoutService();
-    setUser(null);
     setToken(null);
     delete api.defaults.headers.common["Authorization"];
+    await refetchUser();
   };
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+  const loading = loadingUser || loadingToken;
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, loginAsParent, loginAsChild, logout }}
+      value={{
+        user: user ?? null,
+        token,
+        loading,
+        loginAsParent,
+        loginAsChild,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,12 +1,54 @@
 import React from "react";
-import { TouchableOpacity, Image, StyleSheet, View } from "react-native";
+import {
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 import HeroCharacterSVG from "./HeroCharacterSVG";
 
-export default function CharacterButton({ onPress }: { onPress?: () => void }) {
+type Props = {
+  onPress?: () => void;
+  size?: number;
+  icon?: React.ReactNode;
+  backgroundColor?: string;
+  borderColor?: string;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+export default function CharacterButton({
+  onPress,
+  size = 28,
+  icon = <HeroCharacterSVG width={size} height={size} />,
+  backgroundColor = "#298B96",
+  borderColor = "#ffffff88",
+  disabled = false,
+  style,
+}: Props) {
   return (
-    <View style={styles.gradientWrapper}>
-      <TouchableOpacity onPress={onPress} style={styles.button}>
-        <HeroCharacterSVG width={28} height={28} />
+    <View
+      style={[
+        styles.gradientWrapper,
+        {
+          backgroundColor,
+          borderColor,
+          borderRadius: 14,
+          opacity: disabled ? 0.6 : 1,
+        },
+        style,
+      ]}
+    >
+      <TouchableOpacity
+        onPress={onPress}
+        style={[
+          styles.button,
+          { borderRadius: size * 0.5, padding: size * 0.2 },
+        ]}
+        disabled={disabled}
+      >
+        {icon}
       </TouchableOpacity>
     </View>
   );
@@ -14,11 +56,8 @@ export default function CharacterButton({ onPress }: { onPress?: () => void }) {
 
 const styles = StyleSheet.create({
   gradientWrapper: {
-    borderRadius: 16,
     padding: 2,
-    backgroundColor: "#298B96",
     borderWidth: 2,
-    borderColor: "#ffffff88",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -26,8 +65,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   button: {
-    borderRadius: 14,
-    padding: 6,
     alignItems: "center",
     justifyContent: "center",
   },
