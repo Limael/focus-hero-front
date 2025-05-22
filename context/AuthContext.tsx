@@ -1,11 +1,12 @@
-// context/AuthContext.tsx
 import React, { createContext, useContext } from "react";
-import { useProfile } from "@/hooks/useProfile"; // novo hook com React Query!
+import { useProfile } from "@/hooks/useProfile";
 import { getToken, logout as logoutService } from "@/services/authService";
 import { api } from "@/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQueryClient } from "@tanstack/react-query";
+import { getPushToken } from "@/utils/getPushToken";
+import { registerDeviceToken } from "@/services/deviceTokenService";
 
-// Tipagens de sempre
 export type Psychologist = { id: number; name: string; email: string };
 export type Parent = {
   id: number;
@@ -41,17 +42,16 @@ type AuthContextData = {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // Aqui usamos o hook do React Query:
   const {
     data: user,
     isLoading: loadingUser,
     refetch: refetchUser,
   } = useProfile();
-  // Você pode querer controlar o token separado se precisar
   const [token, setToken] = React.useState<string | null>(null);
   const [loadingToken, setLoadingToken] = React.useState(true);
 
-  // Carregar token no mount (opcional, se não fizer pelo TanStack Query)
+  const queryClient = useQueryClient();
+
   React.useEffect(() => {
     (async () => {
       const storedToken = await getToken();
@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
         setToken(storedToken);
       }
+
       setLoadingToken(false);
     })();
   }, []);
@@ -69,7 +70,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await AsyncStorage.setItem("@focusHero:token", newToken);
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     setToken(newToken);
-    await refetchUser(); // força atualização do user depois do login
+
+    await queryClient.invalidateQueries({ queryKey: ["profile"] });
+    await refetchUser();
   };
 
   const loginAsChild = async (
@@ -82,17 +85,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       name,
       password,
     });
-    const newToken = res.data.access_token;
+    const newToken = res?.data?.access_token;
     await AsyncStorage.setItem("@focusHero:token", newToken);
     api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
     setToken(newToken);
-    await refetchUser();
+
+    await queryClient.invalidateQueries({ queryKey: ["profile"] });
   };
 
   const logout = async () => {
     await logoutService();
     setToken(null);
     delete api.defaults.headers.common["Authorization"];
+
+    await queryClient.removeQueries({ queryKey: ["profile"] });
+
     await refetchUser();
   };
 
