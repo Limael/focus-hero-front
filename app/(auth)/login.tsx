@@ -56,8 +56,12 @@ export default function LoginScreen() {
     try {
       await loginAsParent(data.email, data.password);
       router.replace("/");
-    } catch {
-      Alert.alert("Erro ao entrar", "E-mail ou senha inválidos");
+    } catch (error: any) {
+      console.error("Erro ao fazer login:", error);
+      Alert.alert(
+        "Erro ao entrar",
+        error?.message || "E-mail ou senha inválidos"
+      );
     }
   };
 
