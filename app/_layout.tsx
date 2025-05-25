@@ -1,6 +1,6 @@
 // app/_layout.tsx
 import { Stack } from "expo-router";
-import { getLoadedFonts, useFonts } from "expo-font";
+import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -19,14 +19,16 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    "Supersonic Rocketship": require("../assets/fonts/Supersonic Rocketship.ttf"),
+  const [loaded, error] = useFonts({
+    SupersonicRocketship: require("../assets/fonts/SupersonicRocketship.ttf"),
+    Afacad: require("../assets/fonts/AfacadBold.otf"),
+    AfacadBold: require("../assets/fonts/AfacadBold.otf"),
   });
 
   useEffect(() => {
+    if (error) console.error("Erro ao carregar fonte:", error);
     if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
-  if (!loaded) return null;
+  }, [loaded, error]);
 
   return (
     <QueryClientProvider client={queryClient}>

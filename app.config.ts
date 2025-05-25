@@ -27,7 +27,8 @@ export default {
       typedRoutes: true,
     },
     android: {
-      package: "com.focushero.app",
+      package: "com.limael.focushero",
+      googleServicesFile: "./google-services.json",
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",

@@ -1,4 +1,4 @@
-package com.focushero.app
+package com.limael.focushero
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

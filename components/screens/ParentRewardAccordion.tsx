@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   childName: {
     color: "#fff",
-    fontWeight: "bold",
+    fontFamily: "SupersonicRocketship",
     fontSize: 18,
   },
   taskList: {

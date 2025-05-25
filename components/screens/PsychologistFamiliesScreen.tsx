@@ -5,7 +5,6 @@ import { ParentAccordion } from "../ui/ParentAccordion";
 
 export default function PsychologistFamiliesScreen() {
   const { data: parents = [], isLoading } = useParentsAndChildren();
-  console.log("parents", parents);
   if (isLoading) return null;
 
   return (

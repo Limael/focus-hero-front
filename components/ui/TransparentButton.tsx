@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textTransform: "uppercase",
-    fontFamily: "ComicNeue-Bold", // ou o que você estiver usando
+    fontFamily: "SupersonicRocketship", // ou o que você estiver usando
   },
 });

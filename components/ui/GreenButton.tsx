@@ -76,9 +76,8 @@ const styles = StyleSheet.create({
   text: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
     letterSpacing: 1,
     textTransform: "uppercase",
-    fontFamily: "ComicNeue-Bold",
+    fontFamily: "SupersonicRocketship",
   },
 });

@@ -1,11 +1,7 @@
-import axios from "axios";
+// services/api.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Constants from "expo-constants";
 import { logout } from "./authService";
-
-const api = axios.create({
-  baseURL: Constants.expoConfig?.extra?.API_URL,
-});
+import api from "./axiosInstance";
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("@focusHero:token");

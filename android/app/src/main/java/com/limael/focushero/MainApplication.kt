@@ -1,4 +1,4 @@
-package com.focushero.app
+package com.limael.focushero
 
 import android.app.Application
 import android.content.res.Configuration

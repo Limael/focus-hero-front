@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "103975694696",
+    "project_id": "focus-hero-393b1",
+    "storage_bucket": "focus-hero-393b1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103975694696:android:b78654dd71c1ce26f866dd",
+        "android_client_info": {
+          "package_name": "com.limael.focushero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARpTwqSobNSqkpHehwBf9c7NZtpFVNiLU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

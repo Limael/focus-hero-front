@@ -91,6 +91,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(newToken);
 
     await queryClient.invalidateQueries({ queryKey: ["profile"] });
+    await refetchUser();
+
+    const expoPushToken = await getPushToken();
+    console.log("expoPushToken", expoPushToken);
+    /* if (expoPushToken && user?.id) {
+      await registerDeviceToken(expoPushToken, user.id);
+    }
+ */
   };
 
   const logout = async () => {

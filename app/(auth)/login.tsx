@@ -371,20 +371,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 24,
-    textAlign: "center",
-    color: "#1D3D47",
-  },
+
   input: {
     height: 48,
     borderWidth: 1,
     borderColor: "#A6F3FF",
     backgroundColor: "#298B96",
     color: "#fff",
-
+    fontFamily: "Afacad",
     paddingHorizontal: 16,
     borderRadius: 8,
     marginTop: 12,
@@ -405,7 +399,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "800",
+    fontFamily: "SupersonicRocketship",
   },
   linkContainer: {
     marginTop: 16,
@@ -414,6 +408,7 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#fff",
     fontSize: 14,
+    fontFamily: "Afacad",
   },
   error: {
     color: "#D32F2F",
@@ -444,6 +439,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+    fontFamily: "SupersonicRocketship",
   },
   switchButtonTextActive: {
     color: "#1D3D47",

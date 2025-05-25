@@ -29,6 +29,7 @@
         <data android:scheme="focushero"/>
         <data android:scheme="com.focushero.app"/>
         <data android:scheme="exp+focus-hero"/>
+        <data android:scheme="com.limael.focushero"/>
       </intent-filter>
     </activity>
   </application>
