@@ -16,6 +16,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { GreenButton } from "@/components/ui/GreenButton";
+import { getPushToken } from "@/utils/getPushToken";
 
 type ParentFormData = { email: string; password: string };
 type HeroFormData = { parentEmail: string; name: string; password: string };
@@ -62,7 +63,14 @@ export default function LoginScreen() {
 
   const onSubmitHero = async (data: HeroFormData) => {
     try {
-      await loginAsChild(data.parentEmail, data.name, data.password);
+      const expoPushToken = await getPushToken();
+
+      await loginAsChild(
+        data.parentEmail,
+        data.name,
+        data.password,
+        expoPushToken as string
+      );
       router.replace("/");
     } catch {
       Alert.alert("Erro ao entrar", "Dados inválidos para login do herói");

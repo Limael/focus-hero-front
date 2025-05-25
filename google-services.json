@@ -1,13 +1,29 @@
 {
-    "type": "service_account",
+  "project_info": {
+    "project_number": "103975694696",
     "project_id": "focus-hero-393b1",
-    "private_key_id": "f3704c9e16bc4f1fa4b124f1eb847755c1d2361e",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0xyEWph8TebJ+\n0taOtMKZKSnkXWFz4SeXBuNpuCzVI57hH0Zv5mO5qs63desymBxqoFYt9EVEL+X/\nBhZ9X2QytOQaIJs2WNgMS3vDO9MakbAdGNGWOgI/VOA4urB/4H24i93rOFWFBxlt\nbTpfA/kppsOg7t9i5b6M0093no/O4/TgHvY3g4/LvL7SrVM3ZwjT6wx9BU7R9Qaw\nV4FahPQySMISEMVkZCoEUr043z6qlnw/0edfeMk8iraRD1FOwT4eEpOum3IMjEzd\nokk7Hv5n9L/B6L1CiZnB+wuUzySIj492UO6FMQAzG8kfTfqTqke8101Paod+ooA8\n80eTE9GbAgMBAAECggEALvFOfE0i4LHHUft5z5DMv2za/fvppGehGiylvPwgWDBp\nv1eZuNEAsGPUTfuG2Zp6No3wEvrNScmOVczE5kVxBWHHoak55MDpSTgIqUfNp6aR\nLt0U/4eMsdleaBzCXFJ1Ewju1XfJbUPMrIeikq27c79kKVQeGdZCxtrQVeWMvlIv\ntOZO5eKd1pCnBeqqYo3xKFIWbykn2w559AnoRnVX29CvVUNauxmBNbao02Xhj8cd\nGVWDYe8vgGcT4XlVATvzhkx5C1d+ExKS1eIdi5cZ24HxWtrgXm/cx15tBWRNdjwA\n8EyYDnH62+5lG+kN+jNhltTysbT6+mTOR5VIjsjdYQKBgQDaohcTmWXfYW7IriWs\nLD2VDWBTHE4HcHwMuhWDN2akjbmEToUaig0gYTz6oHdF/4QyNYIGMAT6mm6gfrt7\nuaOtAeOYuZWU/FzCnxs4/Cix5nVywKjYA+cw2gK2Q37R34VtehG9pnexxR87U4t6\nSYqqHyX4jihr5AE2JMb+UHgCMwKBgQDTrL8M8ghVFkwxUBlLFUQNa3QWmEpiEEvN\nbV6ZfqUmnlLXgMZdZ71a0f2fi2YAWGKyApIeJcGWYQaCrEnO/DSCyRYrXjHblJ0V\ncb/YDNRXHfJGlajJRnQHf/m2GzrMeDfn2uODntIyobcZqQIaq8L0YVUgEJlvw237\np6ig7d2a+QKBgEFFzznsvDtarWaAh4LFmoUbfzyQ4MLb1E1AaRfJvH04SsCzaI2p\n1Y1rOndg3Psq897BltYeE/51iL2l2Hdxzunh/H8mOQBH77GzKr9ymPuz4DCoUEBd\nufIdxF2B/STPZNhwb0d9oZKTVWWy5ZtWxW1Q61cvqeW8Jphxlm9qusl9AoGAAwbA\nQIYhWl4UPsw/YFRwgaScp0oMHjTPcKN0q8skv1WaJ5yeuW0nRuojrylGDxE0cAkb\nX7T4fJbsiee+smfmtEv9ticFnXcVe94BeSxNyOUTtrCjFiWcuRK6VkEzaQL7AaSe\nhh46MSEgxgwljI4SHn5ZwjiaiP+JTgTKo2pjNbkCgYEAgWyPSI62sA6htQAbLFPk\n2cS7ucnVa+YpHBGCEQ5NoC8BnqNSBFN1FdwFTsOVbZO3t0lkaDd8Na8rPeexzK49\nI7X1rXdyRrUZgLBhg6KlACv9Cz84qnRo6KcaDU+68wJnuuwokuw5V6WGf+HjZ78x\nUrc4b73sDDpOacJWMgEwWKY=\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-fbsvc@focus-hero-393b1.iam.gserviceaccount.com",
-    "client_id": "117770446303801108286",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40focus-hero-393b1.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
-  }
+    "storage_bucket": "focus-hero-393b1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103975694696:android:b78654dd71c1ce26f866dd",
+        "android_client_info": {
+          "package_name": "com.limael.focushero"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARpTwqSobNSqkpHehwBf9c7NZtpFVNiLU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

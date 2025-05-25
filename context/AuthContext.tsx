@@ -34,7 +34,8 @@ type AuthContextData = {
   loginAsChild: (
     email: string,
     name: string,
-    password: string
+    password: string,
+    deviceToken?: string
   ) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -51,6 +52,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loadingToken, setLoadingToken] = React.useState(true);
 
   const queryClient = useQueryClient();
+  React.useEffect(() => {
+    const registerToken = async () => {
+      if (!token || !user || user.role !== "child") return;
+
+      try {
+        const expoPushToken = await getPushToken();
+        if (expoPushToken) {
+          await registerDeviceToken(expoPushToken, user.id);
+          console.log("Device token registrado com sucesso:", expoPushToken);
+        }
+      } catch (err) {
+        console.warn("Erro ao registrar device token:", err);
+      }
+    };
+
+    registerToken();
+  }, [token, user]);
 
   React.useEffect(() => {
     (async () => {
@@ -78,12 +96,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const loginAsChild = async (
     email: string,
     name: string,
-    password: string
+    password: string,
+    deviceToken?: string
   ) => {
     const res = await api.post("/auth/child-login", {
       parentEmail: email,
       name,
       password,
+      deviceToken,
     });
     const newToken = res?.data?.access_token;
     await AsyncStorage.setItem("@focusHero:token", newToken);
@@ -92,13 +112,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     await queryClient.invalidateQueries({ queryKey: ["profile"] });
     await refetchUser();
-
-    const expoPushToken = await getPushToken();
-    console.log("expoPushToken", expoPushToken);
-    /* if (expoPushToken && user?.id) {
-      await registerDeviceToken(expoPushToken, user.id);
-    }
- */
   };
 
   const logout = async () => {
