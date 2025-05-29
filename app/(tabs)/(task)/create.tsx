@@ -39,9 +39,10 @@ export default function CreateEditTaskScreen() {
   const [description, setDescription] = useState("");
   const [points, setPoints] = useState("");
   const [steps, setSteps] = useState("");
-  const [status, setStatus] = useState<"pending" | "in_progress" | "completed">(
-    "pending"
-  );
+
+  const [status, setStatus] = useState<
+    "pending" | "in_progress" | "completed" | "overdue"
+  >("in_progress");
   const [media, setMedia] = useState<MediaAsset[]>([]);
   const [snackbar, setSnackbar] = useState({
     visible: false,
@@ -144,23 +145,28 @@ export default function CreateEditTaskScreen() {
 
     try {
       if (isEdit && id) {
-        // --- EDITAR ---
-        await updateTask({
-          id: Number(id),
-          data: {
-            description,
-            points: Number(points),
-            childId: Number(childId),
-            dueDate: dueDate.toISOString(),
-            steps: parsedSteps,
-            status,
-            mediaFiles,
-            media: existingMedia.length > 0 ? existingMedia : undefined,
+        await updateTask(
+          {
+            id: Number(id),
+            data: {
+              description,
+              points: Number(points),
+              childId: Number(childId),
+              dueDate: dueDate.toISOString(),
+              steps: parsedSteps,
+              status,
+              mediaFiles,
+              media: existingMedia.length > 0 ? existingMedia : undefined,
+            },
           },
-        });
-        showSnackbar("Tarefa atualizada com sucesso!");
+          {
+            onSuccess: () => {
+              showSnackbar("Tarefa atualizada com sucesso!");
+              setTimeout(() => router.push("/(tabs)"), 1500);
+            },
+          }
+        );
       } else {
-        // --- CRIAR ---
         createTask(
           {
             description,
@@ -171,7 +177,10 @@ export default function CreateEditTaskScreen() {
             mediaFiles,
           },
           {
-            onSuccess: () => showSnackbar("Tarefa criada com sucesso!"),
+            onSuccess: () => {
+              showSnackbar("Tarefa criada com sucesso!");
+              setTimeout(() => router.push("/(tabs)"), 1500);
+            },
             onError: (err: any) => {
               const message =
                 err?.response?.data?.message ||
@@ -182,7 +191,6 @@ export default function CreateEditTaskScreen() {
           }
         );
       }
-      setTimeout(() => router.push("/(tabs)"), 1500);
     } catch (error: any) {
       const msg =
         error?.response?.data?.message || error?.message || "Erro desconhecido";
@@ -260,7 +268,7 @@ export default function CreateEditTaskScreen() {
 
         <Text style={styles.label}>Status da tarefa</Text>
         <View style={styles.radioGroup}>
-          {["pending", "completed"].map((value) => (
+          {["in_progress", "completed"].map((value) => (
             <TouchableOpacity
               key={value}
               style={styles.radio}
@@ -270,7 +278,7 @@ export default function CreateEditTaskScreen() {
                 {status === value && <View style={styles.radioDot} />}
               </View>
               <Text style={styles.radioLabel}>
-                {value === "pending" ? "Não concluída" : "Concluída"}
+                {value === "in_progress" ? "Não concluída" : "Concluída"}
               </Text>
             </TouchableOpacity>
           ))}

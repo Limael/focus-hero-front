@@ -25,6 +25,7 @@ import {
 } from "@/hooks/useTask";
 import { useAuth } from "@/context/AuthContext";
 import { TransparentButton } from "@/components/ui/TransparentButton";
+import BackButton from "@/components/ui/BackButton";
 
 const { width, height } = Dimensions.get("window");
 
@@ -298,6 +299,7 @@ export default function TaskDetailScreen() {
             ]}
             showsVerticalScrollIndicator={false}
           >
+            <BackButton onPress={() => router.back()}>Voltar</BackButton>
             <View style={styles.contentHeader}>
               <Text style={styles.title}>{task.description}</Text>
               <Text style={styles.dueDate}>

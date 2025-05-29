@@ -59,6 +59,19 @@ export type LinkPsychologistInput = {
   associationKey: string;
 };
 
+export async function unlinkParentFromPsychologist(id: number) {
+  const response = await api.delete(
+    `/users/unlink-parent-from-psychologist/${id}`
+  );
+  return response.data;
+}
+export async function unlinkPsychologistFromParent(id: number) {
+  const response = await api.delete(
+    `/users/unlink-psychologist-from-parent/${id}`
+  );
+  return response.data;
+}
+
 export async function linkPsychologist(data: LinkPsychologistInput) {
   const response = await api.post("/users/link-psychologist", data);
   return response.data;

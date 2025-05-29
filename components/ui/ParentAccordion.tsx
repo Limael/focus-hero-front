@@ -9,6 +9,7 @@ import {
   UIManager,
   Animated,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import ArrowDownSVG from "../ui/ArrowDownSVG";
@@ -24,6 +25,7 @@ import {
 import { useRewardsByChildId } from "@/hooks/useRewards";
 import { RewardModal } from "./RewardModal";
 import GiftSVG from "./GiftSVG";
+import { useUnlinkParentFromPsychologist } from "@/hooks/usePsychologist";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -193,7 +195,8 @@ export function ParentAccordion({
   const [expanded, setExpanded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
-
+  const { mutate: unlinkParentFromPsychologist, isPending: isUnlinking } =
+    useUnlinkParentFromPsychologist();
   const toggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const next = !expanded;
@@ -224,9 +227,36 @@ export function ParentAccordion({
           <CharacterButton backgroundColor="#24A384" />
           <Text style={parentStyles.parentName}>{parent.name}</Text>
         </View>
-        <Animated.View style={{ transform: [{ rotate }] }}>
-          <ArrowDownSVG />
-        </Animated.View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 24 }}>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                "Desvincular psicólogo",
+                "Tem certeza que deseja remover o vínculo com o psicólogo?",
+                [
+                  {
+                    text: "Cancelar",
+                    style: "cancel",
+                  },
+                  {
+                    text: "Confirmar",
+                    onPress: () => {
+                      if (parent?.id) {
+                        unlinkParentFromPsychologist(parent?.id);
+                      }
+                    },
+                    style: "destructive",
+                  },
+                ]
+              );
+            }}
+          >
+            <ThreeDotsSVG />
+          </TouchableOpacity>
+          <Animated.View style={{ transform: [{ rotate }] }}>
+            <ArrowDownSVG />
+          </Animated.View>
+        </View>
       </TouchableOpacity>
       {expanded && (
         <Animated.View style={[parentStyles.childList, { opacity: fadeAnim }]}>

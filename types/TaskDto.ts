@@ -52,7 +52,7 @@ export type CreateTaskInput = {
 };
 
 export type UpdateTaskInput = Partial<CreateTaskInput> & {
-  status?: "pending" | "in_progress" | "completed";
+  status?: "pending" | "in_progress" | "completed" | "overdue";
 };
 
 export type TaskFormPayload = {
@@ -64,7 +64,7 @@ export type TaskFormPayload = {
     order: number;
     instruction: string;
   }>;
-  status?: "pending" | "in_progress" | "completed";
+  status?: "pending" | "in_progress" | "completed" | "overdue";
   mediaFiles?: {
     uri: string;
     name: string;

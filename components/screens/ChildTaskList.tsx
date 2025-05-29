@@ -21,6 +21,7 @@ export function ChildTaskList() {
           <RewardTaskCard
             key={task.id}
             isTask
+            reward={task.points}
             title={task.description}
             showReward={index === 0}
             onPress={() =>

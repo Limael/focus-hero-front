@@ -8,6 +8,11 @@ api.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const fullUrl =
+    (config.baseURL || "") +
+    (config.url?.startsWith("/") ? config.url : `/${config.url}`);
+  console.log(`[Axios] ${config.method?.toUpperCase()} => ${fullUrl}`);
+
   return config;
 });
 

@@ -4,7 +4,7 @@ import { api } from "./api";
 
 // Buscar o perfil do usuário autenticado
 export async function getProfile(): Promise<User> {
-  const response = await api.get<User>("/users/me");
+  const response = await api.get<User>("users/me");
   return response.data;
 }
 

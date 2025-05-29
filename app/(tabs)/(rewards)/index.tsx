@@ -12,6 +12,8 @@ import { RewardModal } from "@/components/ui/RewardModal";
 import { useClaimReward, useRewardsForCurrentChild } from "@/hooks/useRewards";
 import { RewardDto } from "@/types/RewardDto";
 import { Text } from "react-native";
+import BackButton from "@/components/ui/BackButton";
+import { router } from "expo-router";
 
 export default function RewardsScreen() {
   const [selected, setSelected] = useState<RewardDto | null>(null);
@@ -54,6 +56,8 @@ export default function RewardsScreen() {
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
       <ScrollView contentContainerStyle={styles.list}>
+        <BackButton onPress={() => router.back()}>Voltar</BackButton>
+
         {rewards.length === 0 && (
           <Text style={styles.noTasks}>Sem recompensas disponíveis.</Text>
         )}

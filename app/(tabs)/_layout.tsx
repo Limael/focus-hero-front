@@ -9,9 +9,9 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
-  Pressable,
   ImageBackground,
   TextInput,
+  Alert,
 } from "react-native";
 import { Slot, useRouter } from "expo-router";
 import RadialBackground from "@/components/RadialBackground";
@@ -24,8 +24,12 @@ import { RoleCard } from "@/components/ui/RoleCard";
 import GameMasterSVG from "@/components/ui/GameMasterSVG";
 import TrashSVG from "@/components/ui/TrashSVG";
 import WizardSVG from "@/components/ui/WizardSVG";
-import { useLinkPsychologist } from "@/hooks/usePsychologist";
+import {
+  useLinkPsychologist,
+  useUnlinkPsychologistFromParent,
+} from "@/hooks/usePsychologist";
 import { RadioButton } from "@/components/ui/RadioButton";
+import CloseButton from "@/components/ui/CloseButton";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -41,6 +45,8 @@ export default function TabLayout() {
     isSuccess,
     error,
   } = useLinkPsychologist();
+  const { mutate: unlinkPsychologist, isPending: isUnlinking } =
+    useUnlinkPsychologistFromParent();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
   useEffect(() => {
@@ -92,10 +98,7 @@ export default function TabLayout() {
           <Slot />
 
           {isDrawerMounted && (
-            <Pressable
-              onPress={() => setMenuVisible(false)}
-              style={styles.overlay}
-            >
+            <View style={styles.overlay}>
               <Animated.View
                 style={[
                   styles.drawer,
@@ -105,6 +108,9 @@ export default function TabLayout() {
                 ]}
               >
                 <View style={{ flex: 1 }}>
+                  <View style={styles.closeButtonContainer}>
+                    <CloseButton onPress={() => setMenuVisible(false)} />
+                  </View>
                   <View style={styles.userInfoBox}>
                     <Text style={styles.label}>Nome</Text>
                     <View style={styles.infoInput}>
@@ -172,7 +178,7 @@ export default function TabLayout() {
                         </Text>
                       )}
                     </View>
-                  ) : !user?.psychologist ? (
+                  ) : !user?.psychologist && user?.role !== "child" ? (
                     <View style={{ marginBottom: 12 }}>
                       <View
                         style={{
@@ -260,9 +266,7 @@ export default function TabLayout() {
                     </View>
                   ) : (
                     <RoleCard
-                      title={
-                        user?.psychologist?.name ?? "Psicólogo não encontrado"
-                      }
+                      title={user?.psychologist?.name ?? "Mago não encontrado"}
                       icon={<WizardSVG width={36} height={36} />}
                       cardColor="#0A3440"
                       borderColor="#27828F"
@@ -270,9 +274,35 @@ export default function TabLayout() {
                       iconBorderColor="#27828F"
                       titleColor="#fff"
                       rightAction={
-                        <TouchableOpacity onPress={() => alert("Excluir!")}>
-                          <TrashSVG width={22} height={22} />
-                        </TouchableOpacity>
+                        user?.psychologist?.name ? (
+                          <TouchableOpacity
+                            onPress={() => {
+                              Alert.alert(
+                                "Desvincular psicólogo",
+                                "Tem certeza que deseja remover o vínculo com o psicólogo?",
+                                [
+                                  {
+                                    text: "Cancelar",
+                                    style: "cancel",
+                                  },
+                                  {
+                                    text: "Confirmar",
+                                    onPress: () => {
+                                      if (user.psychologist?.id) {
+                                        unlinkPsychologist(
+                                          user?.psychologist?.id
+                                        );
+                                      }
+                                    },
+                                    style: "destructive",
+                                  },
+                                ]
+                              );
+                            }}
+                          >
+                            <TrashSVG width={22} height={22} />
+                          </TouchableOpacity>
+                        ) : null
                       }
                     />
                   )}
@@ -289,7 +319,7 @@ export default function TabLayout() {
                   </View>
                 </View>
               </Animated.View>
-            </Pressable>
+            </View>
           )}
         </ImageBackground>
       </RadialBackground>
@@ -397,5 +427,9 @@ const styles = StyleSheet.create({
   radioLabel: {
     color: "#fff",
     fontSize: 13,
+  },
+  closeButtonContainer: {
+    display: "flex",
+    alignItems: "flex-end",
   },
 });

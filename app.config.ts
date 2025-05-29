@@ -2,11 +2,11 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "focus-hero",
+    name: "Focus Hero",
     slug: "focus-hero",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png", 
+    icon: "./assets/images/icon.png",
     scheme: "focushero",
     userInterfaceStyle: "automatic",
     owner: "limael",
@@ -16,13 +16,21 @@ export default {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/splash-icon.png",  
+          image: "./assets/images/splash-icon.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff",
         },
       ],
       "expo-font",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            usesCleartextTraffic: true,
+          },
+        },
+      ],
     ],
 
     experiments: {
@@ -34,7 +42,7 @@ export default {
       googleServicesFile: "./google-services.json",
 
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png", 
+        foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
       },
     },
@@ -56,8 +64,8 @@ export default {
     },
 
     extra: {
-      API_URL: process.env.API_URL,
-      AUTH_TOKEN_KEY: process.env.AUTH_TOKEN_KEY,
+      apiUrl: process.env.EXPO_PUBLIC_API_URL,
+      authTokenKey: process.env.EXPO_PUBLIC_AUTH_TOKEN_KEY,
 
       eas: {
         projectId: "02837c1d-0582-4c64-addd-a9b05819fad0",
