@@ -14,6 +14,7 @@ import { Snackbar } from "react-native-paper";
 import { useCreateChild, useUpdateUser } from "@/hooks/useChildren";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { api } from "@/services/api";
+import BackButton from "@/components/ui/BackButton";
 
 type Gender = "male" | "female" | "other";
 
@@ -128,6 +129,8 @@ export default function CreateOrEditChildScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <BackButton onPress={() => router.back()}>Voltar</BackButton>
+
       {heroes.map((hero, index) => (
         <View key={index} style={styles.card}>
           <View style={styles.removeWrapper}>

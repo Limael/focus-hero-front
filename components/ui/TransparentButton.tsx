@@ -4,11 +4,13 @@ import { Pressable, Text, StyleSheet, Animated } from "react-native";
 type TransparentButtonProps = {
   onPress?: () => void;
   children: React.ReactNode;
+  disabled?: boolean;
 };
 
 export function TransparentButton({
   onPress,
   children,
+  disabled,
 }: TransparentButtonProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -33,6 +35,7 @@ export function TransparentButton({
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      disabled={disabled}
     >
       <Animated.View
         style={[styles.button, { transform: [{ scale: scaleAnim }] }]}

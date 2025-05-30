@@ -30,6 +30,7 @@ import {
 } from "@/hooks/usePsychologist";
 import { RadioButton } from "@/components/ui/RadioButton";
 import CloseButton from "@/components/ui/CloseButton";
+import HeroCharacterSVG from "@/components/ui/HeroCharacterSVG";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -92,7 +93,17 @@ export default function TabLayout() {
           <View style={styles.topBar}>
             <GearButton onPress={() => setMenuVisible(true)} />
             {user.role === "child" && <GemCounter amount={user?.points} />}
-            <CharacterButton />
+            <CharacterButton
+              icon={
+                user?.role === "child" ? (
+                  <HeroCharacterSVG width={28} height={28} />
+                ) : user?.role === "parent" ? (
+                  <GameMasterSVG width={28} height={28} />
+                ) : (
+                  <WizardSVG width={28} height={28} />
+                )
+              }
+            />
           </View>
 
           <Slot />

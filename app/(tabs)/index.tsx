@@ -11,12 +11,17 @@ import PsychologistFamiliesScreen from "@/components/screens/PsychologistFamilie
 
 export default function TasksScreen() {
   const { user } = useAuth();
-  const { data: children = [] } = useChildren();
+  const { data: children = [], isFetching } = useChildren();
   const router = useRouter();
   if (user?.role === "parent") {
     return (
       <View style={styles.wrapper}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          {isFetching && (
+            <View style={{ padding: 16 }}>
+              <Text>Carregando heróis...</Text>
+            </View>
+          )}
           {children.map((relation) => (
             <ParentTaskAccordion
               key={relation.child.id}

@@ -46,7 +46,7 @@ export async function updateTask(
 
 export async function updateTaskStatus(
   id: number,
-  status: "pending" | "in_progress" | "completed"
+  status: "pending" | "in_progress" | "completed" | "overdue"
 ) {
   const response = await api.put(`/tasks/${id}`, { status });
   return response.data;
@@ -87,5 +87,10 @@ export async function submitTask(payload: SubmitTaskPayload) {
     },
   });
 
+  return response.data;
+}
+
+export async function deleteTaskMedia(mediaId: number) {
+  const response = await api.delete(`/tasks/media/${mediaId}`);
   return response.data;
 }

@@ -26,7 +26,7 @@ if (Platform.OS === "android") {
 export function ParentTaskAccordion({ child }: { child: ChildUser }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
-  const { data: tasks = [], isLoading } = useTasksByChild(child.id);
+  const { data: tasks = [], isPending } = useTasksByChild(child.id);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -35,7 +35,6 @@ export function ParentTaskAccordion({ child }: { child: ChildUser }) {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const next = !expanded;
     setExpanded(next);
-
     Animated.timing(fadeAnim, {
       toValue: next ? 1 : 0,
       duration: 300,
@@ -81,40 +80,33 @@ export function ParentTaskAccordion({ child }: { child: ChildUser }) {
       </TouchableOpacity>
 
       {expanded && (
-        <Animated.View style={[styles.taskList, { opacity: fadeAnim }]}>
-          {isLoading ? (
+        <View style={styles.taskList}>
+          {isPending ? (
             <ActivityIndicator color="#1DCBE2" size="small" />
-          ) : tasks.length > 0 ? (
-            <>
-              {tasks.map((task) => (
-                <RewardTaskCard
-                  key={task.id}
-                  reward={task.points}
-                  isTask
-                  title={task.description}
-                  showReward={false}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(tabs)/(task)/[id]",
-                      params: { id: task.id },
-                    })
-                  }
-                />
-              ))}
-              <TransparentButton
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/(task)/create",
-                    params: { childId: child.id },
-                  })
-                }
-              >
-                Criar nova tarefa
-              </TransparentButton>
-            </>
           ) : (
-            <>
-              <Text style={styles.noTasks}>Sem tarefas atribuídas.</Text>
+            <Animated.View style={[styles.taskList, { opacity: fadeAnim }]}>
+              {tasks.length > 0 ? (
+                <>
+                  {tasks.map((task) => (
+                    <RewardTaskCard
+                      key={task.id}
+                      reward={task.points}
+                      isTask
+                      title={task.description}
+                      showReward={false}
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(tabs)/(task)/[id]",
+                          params: { id: task.id },
+                        })
+                      }
+                    />
+                  ))}
+                </>
+              ) : (
+                <Text style={styles.noTasks}>Sem tarefas atribuídas.</Text>
+              )}
+
               <TransparentButton
                 onPress={() =>
                   router.push({
@@ -125,9 +117,9 @@ export function ParentTaskAccordion({ child }: { child: ChildUser }) {
               >
                 Criar nova tarefa
               </TransparentButton>
-            </>
+            </Animated.View>
           )}
-        </Animated.View>
+        </View>
       )}
     </View>
   );

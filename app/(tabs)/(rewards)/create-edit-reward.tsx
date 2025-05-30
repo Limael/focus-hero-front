@@ -20,6 +20,7 @@ import {
 import { useChildren } from "@/hooks/useChildren";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { RewardStatus } from "@/types/RewardDto";
+import BackButton from "@/components/ui/BackButton";
 
 type RewardForm = {
   description: string;
@@ -134,6 +135,8 @@ export default function CreateOrEditRewardScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <BackButton onPress={() => router.back()}>Voltar</BackButton>
+
       <View style={styles.card}>
         <Text style={styles.label}>Descrição do prêmio*</Text>
         <TextInput

@@ -11,13 +11,20 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCreateTask, useTaskById, useUpdateTask } from "@/hooks/useTask";
+import {
+  useCreateTask,
+  useDeleteTaskMediaById,
+  useTaskById,
+  useUpdateTask,
+} from "@/hooks/useTask";
 import { TransparentButton } from "@/components/ui/TransparentButton";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { Snackbar } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import BackButton from "@/components/ui/BackButton";
 
 type MediaAsset = {
+  id?: number;
   uri: string;
   type: "image" | "video";
   fileName?: string;
@@ -35,10 +42,13 @@ export default function CreateEditTaskScreen() {
   const { mutate: createTask, isPending: isCreating } = useCreateTask();
   const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask();
   const { data: existingTask, isLoading: isLoadingTask } = useTaskById(id!);
-
+  const { mutate: deleteTaskMediaById, isPending: deleteTaskMediaByIdPending } =
+    useDeleteTaskMediaById();
   const [description, setDescription] = useState("");
   const [points, setPoints] = useState("");
   const [steps, setSteps] = useState("");
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaToDelete, setMediaToDelete] = useState<number[]>([]);
 
   const [status, setStatus] = useState<
     "pending" | "in_progress" | "completed" | "overdue"
@@ -50,11 +60,12 @@ export default function CreateEditTaskScreen() {
     error: false,
   });
   const [dueDate, setDueDate] = useState<Date>(new Date());
+  const [pointsError, setPointsError] = useState("");
+
   const [showDatePicker, setShowDatePicker] = useState<"date" | "time" | null>(
     null
   );
 
-  // Carrega dados da tarefa em modo de edição
   useEffect(() => {
     if (existingTask && isEdit) {
       setDescription(existingTask.description);
@@ -64,6 +75,7 @@ export default function CreateEditTaskScreen() {
       setSteps(existingTask.steps.map((s) => s.instruction).join("\n"));
       setMedia(
         existingTask.media.map((m) => ({
+          id: m.id,
           uri: m.url,
           type: m.type,
           fileName: m.url.split("/").pop(),
@@ -96,41 +108,69 @@ export default function CreateEditTaskScreen() {
   const hideSnackbar = () =>
     setSnackbar((prev) => ({ ...prev, visible: false }));
 
-  // Função para selecionar imagem/vídeo
   const pickMedia = async () => {
-    if (media.length >= 5) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      quality: 1,
-      allowsMultipleSelection: false,
-    });
-    if (!result.canceled) {
-      const asset = result.assets[0];
-      const type = asset.type === "video" ? "video" : "image";
-      setMedia((prev) => [
-        ...prev,
-        { uri: asset.uri, type, fileName: asset.fileName ?? undefined },
-      ]);
+    if (media.length >= 5 || mediaLoading) return;
+
+    try {
+      setMediaLoading(true); // começa o loading
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        quality: 1,
+        allowsMultipleSelection: false,
+      });
+
+      if (!result.canceled) {
+        const asset = result.assets[0];
+        const type = asset.type === "video" ? "video" : "image";
+
+        setMedia((prev) => [
+          ...prev,
+          {
+            uri: asset.uri,
+            type,
+            fileName: asset.fileName ?? undefined,
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar mídia:", error);
+      showSnackbar("Erro ao carregar mídia", true);
+    } finally {
+      setMediaLoading(false);
     }
   };
 
-  const removeMedia = (index: number) => {
+  const removeMedia = (index: number, media: MediaAsset) => {
+    if (isEdit && media.id) {
+      setMediaToDelete((prev) => [...prev, media.id!]);
+    }
+
     setMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Função para criar/editar tarefa
   const onSubmit = async () => {
     if (!description.trim() || !points || !steps.trim()) {
       return showSnackbar("Preencha todos os campos obrigatórios.", true);
     }
+    setPointsError("");
 
+    const numericPoints = Number(points);
+
+    if (!description.trim() || !points || !steps.trim()) {
+      return showSnackbar("Preencha todos os campos obrigatórios.", true);
+    }
+
+    if (isNaN(numericPoints) || numericPoints < 0) {
+      setPointsError("Os pontos devem ser um número positivo.");
+      return;
+    }
     const parsedSteps = steps
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean)
       .map((instruction, index) => ({ order: index + 1, instruction }));
 
-    // Montando mídias novas (file://) e mídias existentes (URL remota)
     const newMedia = media.filter((m) => m.uri.startsWith("file://"));
     const mediaFiles = newMedia.map((item, idx) => ({
       uri: item.uri,
@@ -145,6 +185,9 @@ export default function CreateEditTaskScreen() {
 
     try {
       if (isEdit && id) {
+        for (const id of mediaToDelete) {
+          await deleteTaskMediaById(id);
+        }
         await updateTask(
           {
             id: Number(id),
@@ -162,6 +205,7 @@ export default function CreateEditTaskScreen() {
           {
             onSuccess: () => {
               showSnackbar("Tarefa atualizada com sucesso!");
+              setMediaToDelete([]);
               setTimeout(() => router.push("/(tabs)"), 1500);
             },
           }
@@ -208,6 +252,8 @@ export default function CreateEditTaskScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <BackButton onPress={() => router.back()}>Voltar</BackButton>
+
       <Text style={styles.title}>
         {isEdit ? "EDITAR TAREFA" : "CADASTRO DE TAREFA"}
       </Text>
@@ -224,13 +270,16 @@ export default function CreateEditTaskScreen() {
 
         <Text style={styles.label}>Quantos pontos vale?*</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, pointsError && { borderColor: "#e74c3c" }]}
           keyboardType="numeric"
           value={points}
           onChangeText={setPoints}
           placeholder="Ex: 100"
           placeholderTextColor="#fff"
         />
+        {pointsError ? (
+          <Text style={{ color: "#e74c3c", marginTop: 4 }}>{pointsError}</Text>
+        ) : null}
 
         <Text style={styles.label}>Quais são os passos da tarefa?*</Text>
         <TextInput
@@ -268,20 +317,29 @@ export default function CreateEditTaskScreen() {
 
         <Text style={styles.label}>Status da tarefa</Text>
         <View style={styles.radioGroup}>
-          {["in_progress", "completed"].map((value) => (
-            <TouchableOpacity
-              key={value}
-              style={styles.radio}
-              onPress={() => setStatus(value as any)}
-            >
-              <View style={styles.radioCircle}>
-                {status === value && <View style={styles.radioDot} />}
-              </View>
-              <Text style={styles.radioLabel}>
-                {value === "in_progress" ? "Não concluída" : "Concluída"}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {(["in_progress", "pending", "completed", "overdue"] as const).map(
+            (value) => (
+              <TouchableOpacity
+                key={value}
+                style={styles.radio}
+                onPress={() => setStatus(value)}
+              >
+                <View style={styles.radioCircle}>
+                  {status === value && <View style={styles.radioDot} />}
+                </View>
+                <Text style={styles.radioLabel}>
+                  {
+                    {
+                      pending: "Pendente",
+                      in_progress: "Em andamento",
+                      completed: "Concluída",
+                      overdue: "Atrasada",
+                    }[value]
+                  }
+                </Text>
+              </TouchableOpacity>
+            )
+          )}
         </View>
 
         {media.map((item, index) => (
@@ -290,22 +348,26 @@ export default function CreateEditTaskScreen() {
             <Text numberOfLines={1} style={{ flex: 1 }}>
               {item.fileName || item.uri}
             </Text>
-            <TouchableOpacity onPress={() => removeMedia(index)}>
+            <TouchableOpacity onPress={() => removeMedia(index, item)}>
               <Text style={styles.removeText}>🗑️</Text>
             </TouchableOpacity>
           </View>
         ))}
 
         {media.length < 5 && (
-          <TransparentButton onPress={pickMedia}>
-            ADICIONAR MÍDIA ({media.length}/5)
+          <TransparentButton onPress={pickMedia} disabled={mediaLoading}>
+            {mediaLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>ADICIONAR MÍDIA ({media.length}/5)</>
+            )}
           </TransparentButton>
         )}
       </View>
 
       <View style={styles.submitButton}>
         <GreenButton disabled={isCreating || isUpdating} onPress={onSubmit}>
-          {isCreating || isUpdating ? (
+          {isCreating || isUpdating || mediaLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.submitText}>
@@ -357,9 +419,10 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   radioGroup: {
-    flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 8,
+    marginBottom: 16,
+    gap: 18,
   },
   radio: {
     flexDirection: "row",

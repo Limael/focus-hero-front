@@ -1,6 +1,7 @@
 import {
   createTask,
   deleteTask,
+  deleteTaskMedia,
   getChildrenTaskById,
   getTaskById,
   getTasksByParent,
@@ -76,7 +77,7 @@ export function useUpdateTaskStatus() {
       status,
     }: {
       id: number;
-      status: "pending" | "in_progress" | "completed";
+      status: "pending" | "in_progress" | "completed" | "overdue";
     }) => updateTaskStatus(id, status),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["task", String(id)] });
@@ -104,6 +105,21 @@ export function useDeleteTask() {
     mutationFn: deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", "parent"] });
+    },
+  });
+}
+
+export function useDeleteTaskMediaById() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (mediaId: number) => deleteTaskMedia(mediaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", "parent"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error) => {
+      console.error("Erro ao deletar mídia:", error);
     },
   });
 }

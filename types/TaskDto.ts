@@ -30,7 +30,7 @@ export type TaskSubmissionDto = {
 export type TaskDto = {
   id: number;
   description: string;
-  status: "pending" | "in_progress" | "completed";
+  status: "pending" | "in_progress" | "completed" | "overdue";
   points: number;
   dueDate: string;
   parentId: number;
